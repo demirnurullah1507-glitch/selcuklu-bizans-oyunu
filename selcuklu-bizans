@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Malazgirt Zaferi: Selçuklu vs Bizans Quiz Oyunu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      /* Arka plan: hem degrade hem de görsel.
+         "selcuklu-bizans.jpg" dosyasını HTML ile aynı klasöre koyup
+         ismini istersen değiştirebilirsin. */
+      background:
+        linear-gradient(135deg, rgba(18, 36, 59, 0.9), rgba(29, 63, 94, 0.9)),
+        url("selcuklu-bizans.jpg") center/cover fixed no-repeat;
+      color: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      padding: 20px 24px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #d0e0ff;
+      margin-bottom: 16px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .health-bar-wrapper {
+      margin: 10px 0 16px;
+    }
+
+    .health-label {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .health-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .health-fill {
+      height: 100%;
+      width: 50%;
+      background: linear-gradient(90deg, #00d66b, #a4ff4f);
+      transition: width 0.4s ease;
+    }
+
+    .question-card {
+      background: rgba(9, 16, 31, 0.78);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .question-number {
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #9cc3ff;
+    }
+
+    .question-text {
+      font-size: 17px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .option-btn {
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #f5f5f5;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
+      min-height: 44px;
+    }
+
+    .option-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+      opacity: 0.6;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .option-correct {
+      background: rgba(0, 200, 120, 0.9) !important;
+      color: #fff;
+    }
+
+    .option-wrong {
+      background: rgba(210, 40, 60, 0.9) !important;
+      color: #fff;
+    }
+
+    .hidden-option {
+      visibility: hidden;
+    }
+
+    .lifelines {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .lifeline-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.12);
+      color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lifeline-btn span {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .lifeline-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .status-bar {
+      font-size: 14px;
+      margin-top: 6px;
+      min-height: 20px;
+    }
+
+    .status-success {
+      color: #9cffb0;
+    }
+
+    .status-fail {
+      color: #ffb3b3;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .primary-btn, .secondary-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(90deg, #f4b400, #ff6f00);
+      color: #161616;
+      font-weight: bold;
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.12);
+      color: #f5f5f5;
+    }
+
+    .end-screen-title {
+      font-size: 20px;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .end-screen-text {
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .end-screen-stats {
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Malazgirt Zaferi: Selçuklu vs Bizans</h1>
+    <p class="subtitle">
+      Selçuklu ordusunun komutanısın. Bizans'ı yenmek için 10 sorudan en fazla <strong>3 yanlış</strong> yapabilirsin!
+    </p>
+
+    <div id="start-screen">
+      <p class="end-screen-text">
+        Doğru cevaplarla Selçuklu ordusunu güçlendir, yanlış cevaplar Bizans'ı güçlendirir.
+        Elinde iki özel hamle var:
+      </p>
+      <ul style="font-size: 13px; margin: 10px 0 0 18px;">
+        <li><strong>50–50 İpucu:</strong> Yanlış seçeneklerin yarısını kaldırır (1 kez).</li>
+        <li><strong>Soru Değiştir:</strong> Bu soruyu atlayıp bir sonrakine geçersin (1 kez).</li>
+      </ul>
+      <div class="center">
+        <button class="primary-btn" onclick="startGame()">Oyuna Başla</button>
+      </div>
+    </div>
+
+    <div id="game-screen" style="display:none;">
+      <div class="top-bar">
+        <div class="badge" id="question-counter">Soru: 1 / 10</div>
+        <div class="badge" id="score-info">Doğru: 0 | Yanlış: 0</div>
+        <div class="badge" id="lives-info">Kalan yanlış hakkı: 3</div>
+      </div>
+
+      <div class="health-bar-wrapper">
+        <div class="health-label">Selçuklu Ordusu Gücü</div>
+        <div class="health-bar">
+          <div class="health-fill" id="health-fill"></div>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-number" id="question-number">Soru 1</div>
+        <div class="question-text" id="question-text">...</div>
+        <div class="options" id="options-container"></div>
+      </div>
+
+      <div class="lifelines">
+        <button id="btn-5050" class="lifeline-btn" onclick="useFiftyFifty()">
+          🧠 50–50 İpucu <span>(1 kez)</span>
+        </button>
+        <button id="btn-skip" class="lifeline-btn" onclick="useSkip()">
+          ⚔️ Soru Değiştir <span>(1 kez)</span>
+        </button>
+      </div>
+
+      <div class="status-bar" id="status-bar"></div>
+    </div>
+
+    <div id="end-screen" style="display:none;">
+      <div id="end-title" class="end-screen-title"></div>
+      <div id="end-text" class="end-screen-text"></div>
+      <div id="end-stats" class="end-screen-stats"></div>
+      <!-- Yanlış yapılan sorular burada listelenecek -->
+      <div id="end-details" style="margin-top: 10px;"></div>
+      <div class="center">
+        <button class="primary-btn" onclick="startGame()">Tekrar Oyna</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Büyük Selçuklu Devleti’nin ilk hükümdarı kimdir?",
+        options: ["Tuğrul Bey", "Alparslan", "Melikşah", "Sultan Sencer"],
+        correctIndex: 0
+      },
+      {
+        question: "1040 yılında Gazneliler ile Selçuklular arasında yapılan savaşın adı nedir?",
+        options: ["Dandanakan Savaşı", "Malazgirt Meydan Muharebesi", "Katvan Savaşı", "Miryokefalon Savaşı"],
+        correctIndex: 0
+      },
+      {
+        question: "Büyük Selçuklu Devleti’nin resmî dini nedir?",
+        options: ["İslamiyet", "Hristiyanlık", "Musevilik", "Zerdüştlük"],
+        correctIndex: 0
+      },
+      {
+        question: "Büyük Selçuklu Devleti’nin en parlak dönemini yaşatan hükümdar kimdir?",
+        options: ["Melikşah", "Tuğrul Bey", "Alparslan", "Sultan Sencer"],
+        correctIndex: 0
+      },
+      {
+        question: "Nizâmülmülk tarafından kurulan meşhur eğitim kurumlarına ne ad verilir?",
+        options: ["Nizâmiye Medreseleri", "Enderun Mektebi", "Sahn-ı Seman Medreseleri", "Mekteb-i Sultani"],
+        correctIndex: 0
+      },
+      {
+        question: "1071’de Bizans ile Selçuklular arasında yapılan savaşın adı nedir?",
+        options: ["Malazgirt Meydan Muharebesi", "Dandanakan Savaşı", "Pasinler Savaşı", "Miryokefalon Savaşı"],
+        correctIndex: 0
+      },
+      {
+        question: "Büyük Selçuklu Devleti’nde vezirlik görevini uzun yıllar yürütmüş, “Siyasetnâme” adlı eseri yazmış olan devlet adamı kimdir?",
+        options: ["Nizâmülmülk", "Hasan Sabbah", "İmam Gazali", "Biruni"],
+        correctIndex: 0
+      },
+      {
+        question: "Büyük Selçuklu Devleti’ni zayıflatan Hasan Sabbah liderliğindeki örgüt hangisidir?",
+        options: ["Bâtınîler (Haşhaşiler)", "Karmatîler", "Moğollar", "Haçlılar"],
+        correctIndex: 0
+      },
+      {
+        question: "Büyük Selçuklu Devleti’nin çözülme sürecini hızlandıran en önemli olay nedir?",
+        options: [
+          "Nizâmülmülk ve Melikşah’ın 1092 yılında art arda ölmesi",
+          "Malazgirt Zaferi",
+          "Dandanakan Savaşı",
+          "Katvan Savaşı"
+        ],
+        correctIndex: 0
+      },
+      {
+        question: "1141’de Karahıtaylara yenilinen savaşın adı nedir?",
+        options: ["Katvan Savaşı", "Malazgirt Meydan Muharebesi", "Miryokefalon Savaşı", "Dandanakan Savaşı"],
+        correctIndex: 0
+      }
+    ];
+
+    const maxWrong = 3;
+    let currentIndex = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let fiftyUsed = false;
+    let skipUsed = false;
+    let answeringLocked = false;
+    let optionButtons = [];
+    let mistakes = []; // Yanlış yapılan soruların listesi
+
+    const startScreen = document.getElementById("start-screen");
+    const gameScreen = document.getElementById("game-screen");
+    const endScreen = document.getElementById("end-screen");
+
+    const questionCounter = document.getElementById("question-counter");
+    const scoreInfo = document.getElementById("score-info");
+    const livesInfo = document.getElementById("lives-info");
+    const healthFill = document.getElementById("health-fill");
+
+    const questionNumber = document.getElementById("question-number");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+
+    const statusBar = document.getElementById("status-bar");
+
+    const btn5050 = document.getElementById("btn-5050");
+    const btnSkip = document.getElementById("btn-skip");
+
+    const endTitle = document.getElementById("end-title");
+    const endText = document.getElementById("end-text");
+    const endStats = document.getElementById("end-stats");
+    const endDetails = document.getElementById("end-details");
+
+    function startGame() {
+      currentIndex = 0;
+      correctCount = 0;
+      wrongCount = 0;
+      fiftyUsed = false;
+      skipUsed = false;
+      answeringLocked = false;
+      mistakes = [];
+
+      startScreen.style.display = "none";
+      endScreen.style.display = "none";
+      gameScreen.style.display = "block";
+
+      btn5050.disabled = false;
+      btnSkip.disabled = false;
+
+      statusBar.textContent = "";
+      statusBar.className = "status-bar";
+      updateHeader();
+      updateHealth();
+      showQuestion();
+    }
+
+    function updateHeader() {
+      questionCounter.textContent =
+        "Soru: " + (currentIndex + 1) + " / " + questions.length;
+      scoreInfo.textContent =
+        "Doğru: " + correctCount + " | Yanlış: " + wrongCount;
+      const remaining = maxWrong - wrongCount;
+      livesInfo.textContent = "Kalan yanlış hakkı: " + (remaining >= 0 ? remaining : 0);
+    }
+
+    function updateHealth() {
+      // Basit hesap: her doğru +10, her yanlış -10, 50 ortalama
+      const base = 50;
+      const value = base + (correctCount - wrongCount) * 10;
+      const clamped = Math.max(10, Math.min(90, value));
+      healthFill.style.width = clamped + "%";
+    }
+
+    function showQuestion() {
+      answeringLocked = false;
+      statusBar.textContent = "";
+      statusBar.className = "status-bar";
+
+      const q = questions[currentIndex];
+      questionNumber.textContent = "Soru " + (currentIndex + 1);
+      questionText.textContent = q.question;
+
+      optionsContainer.innerHTML = "";
+      optionButtons = [];
+
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt;
+        btn.onclick = () => chooseOption(index);
+        optionsContainer.appendChild(btn);
+        optionButtons.push(btn);
+      });
+
+      updateHeader();
+      updateHealth();
+    }
+
+    function chooseOption(selectedIndex) {
+      if (answeringLocked) return;
+      answeringLocked = true;
+
+      const q = questions[currentIndex];
+      const correctIndex = q.correctIndex;
+
+      // İşaretleme
+      optionButtons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correctIndex) {
+          btn.classList.add("option-correct");
+        }
+      });
+
+      if (selectedIndex === correctIndex) {
+        correctCount++;
+        optionButtons[selectedIndex].classList.add("option-correct");
+        statusBar.textContent = "Doğru! Selçuklu ordusu ilerliyor.";
+        statusBar.classList.add("status-success");
+      } else {
+        wrongCount++;
+        optionButtons[selectedIndex].classList.add("option-wrong");
+        statusBar.textContent = "Yanlış! Bizans toparlandı, dikkatli ol.";
+        statusBar.classList.add("status-fail");
+        // Yanlış yapılan soruyu kaydet
+        mistakes.push({
+          questionIndex: currentIndex,
+          selectedIndex: selectedIndex
+        });
+      }
+
+      updateHeader();
+      updateHealth();
+
+      setTimeout(nextStep, 1000);
+    }
+
+    function nextStep() {
+      if (wrongCount > maxWrong) {
+        endGame(false);
+        return;
+      }
+
+      currentIndex++;
+      if (currentIndex >= questions.length) {
+        const won = wrongCount <= maxWrong;
+        endGame(won);
+      } else {
+        showQuestion();
+      }
+    }
+
+    function endGame(won) {
+      gameScreen.style.display = "none";
+      endScreen.style.display = "block";
+
+      if (won) {
+        endTitle.textContent = "Zafer! 🎉";
+        endText.textContent =
+          "Selçuklu ordusu Malazgirt ovasında Bizans'ı bozguna uğrattı. Tarih yeniden yazıldı!";
+      } else {
+        endTitle.textContent = "Maalesef Yenildin… ⚔️";
+        endText.textContent =
+          "Bizans ordusu bu sefer üstün geldi. Soruları tekrar gözden geçirip yeniden dene!";
+      }
+
+      endStats.textContent =
+        "Toplam doğru: " + correctCount +
+        " | Toplam yanlış: " + wrongCount +
+        " | Kullanılan ekstra hamleler → 50–50: " + (fiftyUsed ? "Evet" : "Hayır") +
+        ", Soru Değiştir: " + (skipUsed ? "Evet" : "Hayır");
+
+      // Yanlış yapılan soruların detaylı listesi
+      if (mistakes.length === 0) {
+        endDetails.innerHTML =
+          "<p class='end-screen-text center'>Tüm soruları doğru yaptın, hiç hata yok! 🏅</p>";
+      } else {
+        let html =
+          "<h3 class='end-screen-title' style='font-size:18px;margin-top:10px;margin-bottom:4px;'>Yanlış Yaptığın Sorular</h3>";
+        html += "<ol style='font-size:13px; margin-left:18px;'>";
+        mistakes.forEach((m) => {
+          const q = questions[m.questionIndex];
+          const yourAnswer = q.options[m.selectedIndex];
+          const correctAnswer = q.options[q.correctIndex];
+          html +=
+            "<li style='margin-bottom:6px;'>" +
+            "<strong>Soru: </strong>" + q.question +
+            "<br><strong>Senin cevabın: </strong>" + yourAnswer +
+            "<br><strong>Doğru cevap: </strong>" + correctAnswer +
+            "</li>";
+        });
+        html += "</ol>";
+        endDetails.innerHTML = html;
+      }
+    }
+
+    function useFiftyFifty() {
+      if (fiftyUsed || answeringLocked) return;
+      fiftyUsed = true;
+      btn5050.disabled = true;
+
+      const q = questions[currentIndex];
+      const correctIndex = q.correctIndex;
+
+      const wrongIndices = [];
+      optionButtons.forEach((btn, i) => {
+        if (i !== correctIndex) wrongIndices.push(i);
+      });
+
+      // Yanlışlardan rastgele 2 tanesini gizle
+      shuffleArray(wrongIndices);
+      const toHide = wrongIndices.slice(0, 2);
+      toHide.forEach(i => {
+        optionButtons[i].classList.add("hidden-option");
+        optionButtons[i].disabled = true;
+      });
+
+      statusBar.textContent = "50–50 ipucu kullanıldı. İki yanlış seçenek elendi.";
+      statusBar.classList.add("status-success");
+    }
+
+    function useSkip() {
+      if (skipUsed || answeringLocked) return;
+      if (currentIndex >= questions.length - 1) {
+        // Son sorudaysa pek anlamı yok, kullanma
+        statusBar.textContent = "Bu hamleyi son soruda kullanamazsın.";
+        statusBar.classList.add("status-fail");
+        return;
+      }
+      skipUsed = true;
+      btnSkip.disabled = true;
+
+      statusBar.textContent = "Soru değiştirildi, yeni bir taktikle devam!";
+      statusBar.classList.add("status-success");
+
+      currentIndex++;
+      showQuestion();
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+  </script>
+</body>
+</html>
